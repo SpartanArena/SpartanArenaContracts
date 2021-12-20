@@ -12,14 +12,9 @@ contract SpartanArenaStaking {
     mapping(address => uint256) private mapMemberStake; // Total SPARTA staked by user
     mapping(address => uint256) private mapMemberTimestamp; // Timestamp user last staked
 
-    event MemberDeposits(
-        address indexed member,
-        uint256 amount
-    );
-     event MemberWithdraws(
-        address indexed member,
-        uint256 amount
-    );
+    // ---------- Events ----------
+    event MemberDeposits(address indexed member, uint256 amount);
+    event MemberWithdraws(address indexed member, uint256 amount);
 
     // ---------- Constructor ----------
     constructor(address base) {
@@ -35,27 +30,33 @@ contract SpartanArenaStaking {
         mapMemberTimestamp[member] = block.timestamp + 60;
     }
 
-    function initChanceContract (address chanceAddress) external {
-          // Assign 'PROTOCOL' role to 'Chance' contract (so it can reset member's stake time)
-
+    function initChanceContract(address chanceAddress) external {
+        // Assign 'PROTOCOL' role to 'Chance' contract (so it can reset member's stake time)
     }
 
     // ---------- Actions ----------
 
     function deposit(uint256 amount) external {
-        require(amount > 0, '!VALID'); // Must be a valid amount
-        TransferHelper.safeTransferFrom(spartaAddress, msg.sender, address(this), amount);
+        require(amount > 0, "!VALID"); // Must be a valid amount | #EmptyEvents
+        TransferHelper.safeTransferFrom(
+            spartaAddress,
+            msg.sender,
+            address(this),
+            amount
+        );
         mapMemberStake[msg.sender] += amount;
         globalStaked += amount;
-        mapMemberTimestamp[msg.sender] = block.timestamp;
+        mapMemberTimestamp[msg.sender] = block.timestamp; // Only required on deposit, withdrawal (even if not 100% withdrawal) should keep timestamp
         emit MemberDeposits(msg.sender, amount);
     }
 
     function withdraw(uint256 amount) external {
-        require(amount >= mapMemberStake[msg.sender], "!STAKED");
-        mapMemberStake[msg.sender] -= amount;
+        uint256 _memberStaked = mapMemberStake[msg.sender]; // Store in memory | #SaveGas
+        require(_memberStaked > 0, "!STAKED"); // Must have existing stake
+        require(amount > 0 && amount <= _memberStaked, "!VALID"); // Must be a valid amount | #EmptyEvents
+        mapMemberStake[msg.sender] = _memberStaked - amount;
         globalStaked -= amount;
-        TransferHelper.safeTransfer(spartaAddress,  msg.sender,  amount);
+        TransferHelper.safeTransfer(spartaAddress, msg.sender, amount);
         emit MemberWithdraws(msg.sender, amount);
     }
 
