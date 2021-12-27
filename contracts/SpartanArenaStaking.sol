@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.2;
-import "./TransferHelper.sol";
 
-contract SpartanArenaStaking {
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+
+contract SpartanArenaStaking is SafeERC20 {
     // ---------- Vars ----------
     address public spartaAddress; // SPARTA base contract address
     address public chanceContract; // Spartan arena chance contract address
@@ -36,15 +37,15 @@ contract SpartanArenaStaking {
     }
 
     function initChanceContract (address chanceAddress) external {
+        chanceContract = chanceAddress;
           // Assign 'PROTOCOL' role to 'Chance' contract (so it can reset member's stake time)
-
     }
 
     // ---------- Actions ----------
 
     function deposit(uint256 amount) external {
         require(amount > 0, '!VALID'); // Must be a valid amount
-        TransferHelper.safeTransferFrom(spartaAddress, msg.sender, address(this), amount);
+        safeTransferFrom(spartaAddress, msg.sender, address(this), amount);
         mapMemberStake[msg.sender] += amount;
         globalStaked += amount;
         mapMemberTimestamp[msg.sender] = block.timestamp;
@@ -55,7 +56,7 @@ contract SpartanArenaStaking {
         require(amount >= mapMemberStake[msg.sender], "!STAKED");
         mapMemberStake[msg.sender] -= amount;
         globalStaked -= amount;
-        TransferHelper.safeTransfer(spartaAddress,  msg.sender,  amount);
+        safeTransfer(spartaAddress,  msg.sender,  amount);
         emit MemberWithdraws(msg.sender, amount);
     }
 
