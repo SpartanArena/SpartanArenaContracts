@@ -8,6 +8,8 @@ contract SpartanArenaChance {
     address public TICKETS; // Tickets contract address
     uint256 public stakeTime; // Time required to be eligible for a dice roll
 
+    // ---------- Events ----------
+
     // ---------- Interfaces ----------
     SpartanArenaStaking private _STAKING;
 
