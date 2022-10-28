@@ -116,6 +116,8 @@ contract UpDownArena is AccessControl {
         address _recipient,
         uint256 _amount
     ) external onlyRole(ADMIN_ROLE) {
+        // Maybe add a require to make sure the LP token or whatever prize asset is not able to be removed
+        // i.e. only intended wrongly-received assets can be recovered (as intended)
         IERC20(_token).safeTransfer(_recipient, _amount);
         // add event emit
     }
