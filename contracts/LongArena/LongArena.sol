@@ -4,7 +4,7 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract BullArena is AccessControl {
+contract LongArena is AccessControl {
     // ---------- Interfaces ----------
     using SafeERC20 for IERC20;
 
@@ -16,7 +16,7 @@ contract BullArena is AccessControl {
     address public token2; // Other pooled token
     address public reserveAddr; // Address for the reserve holdings
 
-    uint256 public secsPerArena; // Number of seconds per arena
+    uint256 public secsPerArena; // Number of seconds per arena round
     uint256 public reserveShare; // Basis point share going to the reserve
     uint256 public runnerShare; // Basis point share going to the 'runners' who successfully help process each phase of the arena
     uint256 public runnerMinCount; // Number of runners required to finalise the arena
@@ -32,13 +32,13 @@ contract BullArena is AccessControl {
 
     struct Arena {
         uint256 arenaId;
-        uint256 startTime;
-        uint256 closeTime;
-        uint256 finalTime;
-        uint256 closePrice;
-        uint256 finalPrice;
-        uint256 upCount;
-        uint256 downCount;
+        uint256 signalStartTime; // Start timestamp for the 'signal' period
+        uint256 signalCloseTime; // End timestamp for the 'signal' period
+        uint256 finalTime; // Timestamp when runners can finalise the results
+        uint256 token1TallyIn; // Tally of token1 added as liq
+        uint256 token2TallyIn; // Tally of token2 added as liq
+        uint256 token1TallyOut; // Tally of token1 removed from liq
+        uint256 token2TallyOut; // Tally of token2 removed from liq
         uint256 totalAmount;
         uint256 rewardPerShare;
     }
@@ -61,8 +61,8 @@ contract BullArena is AccessControl {
         _setupRole(MODERATOR_ROLE, msg.sender);
         poolAddr = _poolAddr;
         reserveAddr = _reserveAddr;
-        // baseToken = interface in pool and get BASE;
-        // quoteToken = interface in pool and get TOKEN;
+        // token1 = interface in pool and get BASE;
+        // token2 = interface in pool and get TOKEN;
         secsPerArena = _secsPerArena;
         reserveShare = _reserveShare;
         runnerShare = _runnerShare;
@@ -76,11 +76,18 @@ contract BullArena is AccessControl {
     /** Create new Arena **/
     function createArena() external {}
 
-    /** Predict price will go up **/
-    function goingUp() external {}
-
-    /** Predict price will go down **/
-    function goingDown() external {}
+    /** Go long on one of the pooled tokens
+     * _longToken = address of the token you want to long
+     * _supplyToken = address of the token you want to convert to _longToken
+     */
+    function longToken(address _longToken, address _supplyToken) external {
+        // check if _supplyToken === _longToken
+        // if false, swap to _longToken
+        // if true, continue
+        // add user _longToken units to the contract
+        // update total
+        // create a long position for the user
+    }
 
     /**
      * Any user can help derive the Arena's final price
